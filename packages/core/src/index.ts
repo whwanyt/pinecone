@@ -1,6 +1,5 @@
-import Package from "../package.json";
-import App from "./app";
-export default {
-  App,
-  Version: Package.version,
-};
+import "reflect-metadata";
+export * from "./app";
+export * from "./version";
+export * from "./modal";
+export * from "./modules";
