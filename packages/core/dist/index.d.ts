@@ -1,5 +1,5 @@
-import * as socket_io_dist_typed_events from 'socket.io/dist/typed-events';
-import { ServerOptions, Server } from 'socket.io';
+import { SocketServer } from '@pinecone/platform-socket.io';
+import { GrpcServer } from '@pinecone/platform-grpc';
 
 declare class ApplicationContextOptions {
 }
@@ -11,14 +11,15 @@ declare enum Transport {
 interface ServerAdapter {
 }
 
-interface ServiceOptions<T> extends ApplicationContextOptions {
+interface ServiceOptions extends ApplicationContextOptions {
     transport: Transport;
-    options: T;
+    options: any;
 }
 declare class App {
     private server;
-    create<T = ServerOptions>(appModule: any, options: ServiceOptions<T>): Promise<this>;
-    initialize<T>(options: ServiceOptions<T>): Promise<Server<socket_io_dist_typed_events.DefaultEventsMap, socket_io_dist_typed_events.DefaultEventsMap, socket_io_dist_typed_events.DefaultEventsMap, any>>;
+    private options;
+    create(appModule: any, options: ServiceOptions): Promise<this>;
+    initialize(options: ServiceOptions): Promise<SocketServer | GrpcServer>;
     listen(port: number): void;
 }
 declare const AppFactory: App;

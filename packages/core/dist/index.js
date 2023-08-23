@@ -823,9 +823,6 @@ var Reflect2;
   });
 })(Reflect2 || (Reflect2 = {}));
 
-// src/app.ts
-var import_http = require("http");
-
 // src/modal.ts
 var Transport = /* @__PURE__ */ ((Transport2) => {
   Transport2["GRPC"] = "GRPC";
@@ -834,10 +831,12 @@ var Transport = /* @__PURE__ */ ((Transport2) => {
 })(Transport || {});
 
 // src/app.ts
-var import_socket = require("socket.io");
 var import_logger = require("@pinecone/logger");
+var import_platform_socket = require("@pinecone/platform-socket.io");
+var import_platform_grpc = require("@pinecone/platform-grpc");
 var App = class {
   async create(appModule, options) {
+    this.options = options;
     const server = await this.initialize(options);
     this.server = server;
     return this;
@@ -845,17 +844,25 @@ var App = class {
   async initialize(options) {
     switch (options.transport) {
       case "GRPC" /* GRPC */:
-        break;
+        return new import_platform_grpc.GrpcServer().create();
       default:
-        const httpServer2 = (0, import_http.createServer)();
-        return new import_socket.Server(httpServer2, options.options);
+        return new import_platform_socket.SocketServer().create(options.options);
     }
-    const httpServer = (0, import_http.createServer)();
-    return new import_socket.Server(httpServer, options.options);
   }
   listen(port) {
-    this.server.listen(port);
-    import_logger.Log.Info(`Server prot ${port}`, "AppServer");
+    switch (this.options.transport) {
+      case "GRPC" /* GRPC */:
+        this.server.listen("0.0.0.0:" + port);
+        import_logger.Log.Info(`GrpcServer prot ${port}`, "AppServer");
+        break;
+      case "SOCKET" /* SOCKET */:
+        this.server.listen(port);
+        import_logger.Log.Info(`SocketServer prot http://127.0.0.1:${port}`, "AppServer");
+        break;
+      default:
+        import_logger.Log.Error(`\u6682\u4E0D\u652F\u6301\u8BE5\u670D\u52A1\u7C7B\u578B`, "AppServer");
+        break;
+    }
   }
 };
 var AppFactory = new App();
@@ -880,7 +887,8 @@ var package_default = {
   license: "ISC",
   dependencies: {
     "@pinecone/logger": "0.0.1",
-    "socket.io": "^4.7.2"
+    "@pinecone/platform-socket.io": "0.0.1",
+    "@pinecone/platform-grpc": "0.0.1"
   }
 };
 

@@ -1,5 +1,5 @@
 {
-  "name": "@pinecone/core",
+  "name": "@pinecone/platform-socket.io",
   "version": "0.0.1",
   "description": "",
   "main": "src/index.ts",
@@ -16,8 +16,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@pinecone/logger": "0.0.1",
-    "@pinecone/platform-socket.io": "0.0.1",
-    "@pinecone/platform-grpc": "0.0.1"
+    "socket.io": "^4.7.2"
   }
 }
