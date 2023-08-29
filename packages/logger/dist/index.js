@@ -38,10 +38,10 @@ var import_dayjs = __toESM(require("dayjs"));
 function Error2(message, name) {
   let text = "";
   if (name) {
-    text = text + " " + import_chalk.default.bold(name);
+    text = text + " " + import_chalk.default.red(name);
   }
   if (message) {
-    text = text + " " + import_chalk.default.red(message);
+    text = text + " " + message;
   }
   console.log(
     import_chalk.default.bgGreen(" " + (0, import_dayjs.default)().format("YYYY-MM-DDTHH:mm:ss ")) + text
@@ -50,13 +50,13 @@ function Error2(message, name) {
 function Info(message, name) {
   let text = "";
   if (name) {
-    text = text + " " + import_chalk.default.bold(name);
+    text = text + " " + import_chalk.default.green(name);
   }
   if (message) {
-    text = text + " " + import_chalk.default.green(message);
+    text = text + " " + message;
   }
   console.log(
-    import_chalk.default.bgGreen(" " + (0, import_dayjs.default)().format("YYYY-MM-DDTHH:mm:ss") + " ") + text
+    import_chalk.default.green(" " + (0, import_dayjs.default)().format("YYYY-MM-DDTHH:mm:ss") + " ") + text
   );
 }
 var Log = {

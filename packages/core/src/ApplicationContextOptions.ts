@@ -1,1 +1,1 @@
-export class ApplicationContextOptions {}
+export abstract class ApplicationContextOptions {}

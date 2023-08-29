@@ -1,6 +1,6 @@
+import "reflect-metadata";
 import { AppFactory, Transport } from "@pinecone/core";
 import { AppModule } from "./app";
-
 
 async function main() {
   const app = await AppFactory.create(AppModule, {
@@ -9,4 +9,5 @@ async function main() {
   });
   app.listen(3000);
 }
+
 main();

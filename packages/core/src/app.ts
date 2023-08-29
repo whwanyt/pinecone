@@ -1,9 +1,9 @@
-import { createServer } from "http";
 import { ApplicationContextOptions } from "./ApplicationContextOptions";
 import { Transport } from "./modal";
 import { Log } from "@pinecone/logger";
 import { SocketServer } from "@pinecone/platform-socket.io";
 import { GrpcServer } from "@pinecone/platform-grpc";
+import { AppContainer } from "./container";
 
 interface ServiceOptions extends ApplicationContextOptions {
   transport: Transport;
@@ -17,6 +17,8 @@ class App {
 
   async create(appModule: any, options: ServiceOptions) {
     this.options = options;
+    const appContainer = new AppContainer();
+    appContainer.initialization(appModule);
     const server = await this.initialize(options);
     this.server = server;
     return this;

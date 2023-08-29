@@ -21,7 +21,10 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var src_exports = {};
 __export(src_exports, {
   AppFactory: () => AppFactory,
+  Inject: () => Inject,
+  Injectable: () => Injectable,
   Module: () => Module,
+  ModuleParams: () => ModuleParams,
   Transport: () => Transport,
   Version: () => Version
 });
@@ -829,14 +832,77 @@ var Transport = /* @__PURE__ */ ((Transport2) => {
   Transport2["SOCKET"] = "SOCKET";
   return Transport2;
 })(Transport || {});
+var ModuleParams = /* @__PURE__ */ ((ModuleParams2) => {
+  ModuleParams2["imports"] = "imports";
+  ModuleParams2["controllers"] = "controllers";
+  ModuleParams2["providers"] = "providers";
+  return ModuleParams2;
+})(ModuleParams || {});
 
 // src/app.ts
 var import_logger = require("@pinecone/logger");
 var import_platform_socket = require("@pinecone/platform-socket.io");
 var import_platform_grpc = require("@pinecone/platform-grpc");
+
+// src/container.ts
+var AppContainer = class {
+  initialization(moduleCls) {
+    const appImports = Reflect.getMetadata(
+      "imports" /* imports */,
+      moduleCls
+    );
+    const appControllers = Reflect.getMetadata(
+      "controllers" /* controllers */,
+      moduleCls
+    );
+    const appProviders = Reflect.getMetadata(
+      "providers" /* providers */,
+      moduleCls
+    );
+    const moduleTree = {
+      item: moduleCls,
+      controllers: appControllers,
+      providers: appProviders,
+      children: this.forModule(appImports)
+    };
+    console.log("initialization");
+    console.log(moduleTree);
+    console.log("initialization");
+  }
+  forModule(moduleCls) {
+    let importsList = [];
+    if (moduleCls === void 0)
+      return importsList;
+    for (const iterator of moduleCls) {
+      const itemImports = Reflect.getMetadata(
+        "imports" /* imports */,
+        iterator
+      );
+      const itemControllers = Reflect.getMetadata(
+        "controllers" /* controllers */,
+        iterator
+      );
+      const itemProviders = Reflect.getMetadata(
+        "providers" /* providers */,
+        iterator
+      );
+      importsList.push({
+        item: iterator,
+        children: this.forModule(itemImports),
+        controllers: itemControllers || [],
+        providers: itemProviders || []
+      });
+    }
+    return importsList;
+  }
+};
+
+// src/app.ts
 var App = class {
   async create(appModule, options) {
     this.options = options;
+    const appContainer = new AppContainer();
+    appContainer.initialization(appModule);
     const server = await this.initialize(options);
     this.server = server;
     return this;
@@ -895,9 +961,58 @@ var package_default = {
 // src/version.ts
 var Version = package_default.version;
 
-// src/modules/index.ts
+// src/decorators/bean-factory.class.ts
+var BeanFactory = class {
+  static putBean(mappingClass, beanClass) {
+    this.beanMapper.set(mappingClass.name, beanClass);
+    console.log(this.beanMapper);
+  }
+  static getBean(mappingClass) {
+    return this.beanMapper.get(mappingClass.name);
+  }
+  static getBeanFunction(mappingFunction) {
+    return this.beanFunctionMapper.get(mappingFunction.name);
+  }
+  static putBeanFunction(mappingFunction, beanFunction) {
+    this.beanFunctionMapper.set(mappingFunction.name, beanFunction);
+  }
+};
+BeanFactory.beanMapper = /* @__PURE__ */ new Map();
+BeanFactory.beanFunctionMapper = /* @__PURE__ */ new Map();
+
+// src/decorators/control.ts
+var beanMapper = /* @__PURE__ */ new Map();
+var resourceObjects = /* @__PURE__ */ new Map();
+
+// src/decorators/inject.ts
+function Inject(target, propertyKey) {
+  const type = Reflect.getMetadata("design:type", target, propertyKey);
+  Object.defineProperty(target, propertyKey, {
+    get: () => {
+      const targetObject = beanMapper.get(type.name);
+      if (targetObject === void 0) {
+        const resourceKey = [
+          target.constructor.name,
+          propertyKey,
+          type.name
+        ].toString();
+        if (!resourceObjects.has(resourceKey)) {
+          resourceObjects.set(resourceKey, new type());
+        }
+        return resourceObjects.get(resourceKey);
+      }
+      return targetObject["factory"];
+    }
+  });
+}
+
+// src/decorators/injectable.ts
+function Injectable(target) {
+  beanMapper.set(target.name, { factory: new target() });
+}
+
+// src/decorators/module.ts
 function Module(metadata) {
-  const propsKeys = Object.keys(metadata);
   return (target) => {
     for (const property in metadata) {
       if (metadata.hasOwnProperty(property)) {
@@ -909,7 +1024,10 @@ function Module(metadata) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AppFactory,
+  Inject,
+  Injectable,
   Module,
+  ModuleParams,
   Transport,
   Version
 });

@@ -1,14 +1,24 @@
 import { SocketServer } from '@pinecone/platform-socket.io';
 import { GrpcServer } from '@pinecone/platform-grpc';
 
-declare class ApplicationContextOptions {
+declare abstract class ApplicationContextOptions {
 }
 
 declare enum Transport {
     GRPC = "GRPC",
     SOCKET = "SOCKET"
 }
+declare enum ModuleParams {
+    imports = "imports",
+    controllers = "controllers",
+    providers = "providers"
+}
 interface ServerAdapter {
+}
+interface ModuleMetadata {
+    imports?: Array<any>;
+    controllers?: Array<any>;
+    providers?: Array<any>;
 }
 
 interface ServiceOptions extends ApplicationContextOptions {
@@ -26,6 +36,10 @@ declare const AppFactory: App;
 
 declare const Version: string;
 
-declare function Module(metadata: any): ClassDecorator;
+declare function Inject(target: any, propertyKey: string): void;
 
-export { AppFactory, Module, ServerAdapter, Transport, Version };
+declare function Injectable(target: any): void;
+
+declare function Module(metadata: ModuleMetadata): ClassDecorator;
+
+export { AppFactory, Inject, Injectable, Module, ModuleMetadata, ModuleParams, ServerAdapter, Transport, Version };
